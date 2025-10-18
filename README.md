@@ -1,36 +1,130 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# HRMU Platform - Labor Management System
 
-## Getting Started
+A modern, comprehensive labor management platform built for HRMU to replace scaflog.io. Features job management, workforce tracking, invoicing, and mobile clock-in/out capabilities.
 
-First, run the development server:
+## 🚀 Technology Stack
 
-```bash
+- **Framework**: Next.js 14 (App Router) + TypeScript
+- **Styling**: Tailwind CSS + shadcn/ui
+- **Database**: Firebase (Firestore, Auth, Storage, Realtime DB)
+- **Hosting**: Vercel
+
+## 📋 Current Features (Phase 1 - Foundation)
+
+- ✅ Next.js 14 project structure
+- ✅ Firebase integration (Firestore, Auth, Storage, Realtime DB)
+- ✅ TypeScript type definitions for all data models
+- ✅ Authentication system with role-based access
+- ✅ Protected routes and permission system
+- ✅ shadcn/ui component library
+- ✅ Comprehensive database schema
+
+## 🗄️ Data Models
+
+The platform includes complete TypeScript definitions for:
+- Users & Authentication (5 role types)
+- Clients with multiple contact types
+- Jobs (40+ fields matching scaflog.io requirements)
+- Activities (5 types: Alterations, Day Labour, Delivery, Dismantle Dayworks, Dismantle Scaffold)
+- Invoices with automated reminders
+- Timesheets with GPS tracking
+- Form submissions
+- Location tracking with breadcrumbs
+
+## 🛠️ Getting Started
+
+### Prerequisites
+- Node.js 18+
+- Firebase account
+- Git
+
+### Installation
+
+1. Clone the repository:
+\`\`\`bash
+git clone https://github.com/AndreiBusu123/hrmu-platform.git
+cd hrmu-platform
+\`\`\`
+
+2. Install dependencies:
+\`\`\`bash
+npm install
+\`\`\`
+
+3. Set up environment variables:
+\`\`\`bash
+cp .env.example .env.local
+\`\`\`
+
+4. Add your Firebase configuration to \`.env.local\`
+
+5. Run the development server:
+\`\`\`bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+\`\`\`
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to see the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📁 Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+\`\`\`
+src/
+├── app/                  # Next.js app router pages
+│   ├── dashboard/        # Dashboard pages
+│   └── login/            # Authentication
+├── components/           # React components
+│   ├── auth/             # Auth components
+│   └── ui/               # shadcn/ui components
+├── contexts/             # React contexts (AuthContext)
+├── lib/
+│   └── firebase/         # Firebase configuration
+├── types/                # TypeScript definitions
+└── hooks/                # Custom hooks
+\`\`\`
 
-## Learn More
+## 🔐 User Roles
 
-To learn more about Next.js, take a look at the following resources:
+| Role | Access | Permissions |
+|------|--------|-------------|
+| Owner | All dashboards | Full access |
+| Field Manager | Site Manager | Job/activity management |
+| Sales | Sales/Marketing | Quotes, clients, invoices |
+| Worker | Mobile only | Timesheets, forms |
+| Admin | Site Manager | User/settings management |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🚀 Roadmap
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Phase 2: Core Features (Weeks 2-9)
+- Jobs module with all fields
+- Activities management
+- Basic invoicing
+- Calendar views
+- Pipeline kanban board
 
-## Deploy on Vercel
+### Phase 3: Mobile & Tracking (Weeks 10-16)
+- Native iOS/Android apps
+- Clock-in/out with GPS
+- Location breadcrumbs
+- Live tracking dashboard
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Phase 4: Advanced (Weeks 17-24)
+- Sales/CRM dashboard
+- Calendar integrations
+- Advanced automation
+- Analytics & reporting
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📖 Documentation
+
+- [Next.js Docs](https://nextjs.org/docs)
+- [Firebase Docs](https://firebase.google.com/docs)
+- [shadcn/ui Docs](https://ui.shadcn.com)
+- [Tailwind CSS Docs](https://tailwindcss.com/docs)
+
+## 📄 License
+
+Private - HRMU Proprietary
+
+---
+
+**Repository**: https://github.com/AndreiBusu123/hrmu-platform
+Built for HRMU Labor Management
