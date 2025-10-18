@@ -20,9 +20,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
-import { createJob } from '@/services/jobs.service';
+import { FileUpload } from '@/components/jobs/FileUpload';
+import { createJob, updateJob } from '@/services/jobs.service';
 import { getClientsForSelect } from '@/services/clients.service';
-import { Job, JobStage, JobUrgency, QuoteFormat } from '@/types';
+import { deleteJobFile } from '@/services/storage.service';
+import { Job, JobStage, JobUrgency, QuoteFormat, JobDocument } from '@/types';
 import { Timestamp } from 'firebase/firestore';
 
 interface JobFormData {
@@ -93,6 +95,9 @@ function NewJobForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [clients, setClients] = useState<Array<{ value: string; label: string }>>([]);
+  const [photos, setPhotos] = useState<JobDocument[]>([]);
+  const [documents, setDocuments] = useState<JobDocument[]>([]);
+  const [createdJobId, setCreatedJobId] = useState<string | null>(null);
 
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<JobFormData>({
     defaultValues: {
@@ -203,13 +208,19 @@ function NewJobForm() {
           reviewedByOperationsManagement: data.reviewedByOperationsManagement,
         },
 
-        documents: [],
-        photos: [],
+        documents,
+        photos,
         createdBy: user.uid,
       };
 
       const jobId = await createJob(jobData, user.uid);
-      router.push(`/dashboard/jobs/${jobId}`);
+      setCreatedJobId(jobId);
+
+      // If no files to upload, redirect immediately
+      if (photos.length === 0 && documents.length === 0) {
+        router.push(`/dashboard/jobs/${jobId}`);
+      }
+      // Otherwise, stay on page to allow file uploads
     } catch (err: any) {
       setError(err.message || 'Failed to create job');
     } finally {
@@ -235,13 +246,16 @@ function NewJobForm() {
 
           <form onSubmit={handleSubmit(onSubmit)}>
             <Tabs defaultValue="basic" className="w-full">
-              <TabsList className="grid w-full grid-cols-6">
+              <TabsList className="grid w-full grid-cols-7">
                 <TabsTrigger value="basic">Basic Info</TabsTrigger>
                 <TabsTrigger value="client">Client</TabsTrigger>
                 <TabsTrigger value="worksite">Worksite</TabsTrigger>
                 <TabsTrigger value="quote">Quote</TabsTrigger>
                 <TabsTrigger value="dates">Dates</TabsTrigger>
                 <TabsTrigger value="checklist">Checklist</TabsTrigger>
+                <TabsTrigger value="files" disabled={!createdJobId}>
+                  Files {!createdJobId && '(Save first)'}
+                </TabsTrigger>
               </TabsList>
 
               {/* Basic Info Tab */}
@@ -738,6 +752,99 @@ function NewJobForm() {
                     </Label>
                   </div>
                 </div>
+              </TabsContent>
+
+              {/* Files Tab */}
+              <TabsContent value="files" className="space-y-6">
+                {!createdJobId ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <p className="text-lg font-medium">Save the job first to upload files</p>
+                    <p className="text-sm mt-2">
+                      Click "Create Job" button below to save the job details, then you can upload photos and documents.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    {/* Photos Section */}
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4">Photos (up to 20)</h3>
+                      <FileUpload
+                        jobId={createdJobId}
+                        userId={user!.uid}
+                        type="photo"
+                        existingFiles={photos}
+                        maxFiles={20}
+                        onUploadComplete={(file) => {
+                          setPhotos([...photos, file]);
+                          // Update job in Firestore
+                          updateJob(createdJobId, { photos: [...photos, file] });
+                        }}
+                        onDelete={async (fileId) => {
+                          try {
+                            // Find the file to delete
+                            const fileToDelete = photos.find((p) => p.documentId === fileId);
+                            if (fileToDelete) {
+                              // Delete from Firebase Storage
+                              await deleteJobFile(fileToDelete.storagePath);
+                            }
+                            // Update state and Firestore
+                            const updatedPhotos = photos.filter((p) => p.documentId !== fileId);
+                            setPhotos(updatedPhotos);
+                            await updateJob(createdJobId, { photos: updatedPhotos });
+                          } catch (error: any) {
+                            console.error('Error deleting photo:', error);
+                            alert('Failed to delete photo: ' + error.message);
+                          }
+                        }}
+                      />
+                    </div>
+
+                    {/* Documents Section */}
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4">Documents (up to 20)</h3>
+                      <FileUpload
+                        jobId={createdJobId}
+                        userId={user!.uid}
+                        type="document"
+                        existingFiles={documents}
+                        maxFiles={20}
+                        onUploadComplete={(file) => {
+                          setDocuments([...documents, file]);
+                          // Update job in Firestore
+                          updateJob(createdJobId, { documents: [...documents, file] });
+                        }}
+                        onDelete={async (fileId) => {
+                          try {
+                            // Find the file to delete
+                            const fileToDelete = documents.find((d) => d.documentId === fileId);
+                            if (fileToDelete) {
+                              // Delete from Firebase Storage
+                              await deleteJobFile(fileToDelete.storagePath);
+                            }
+                            // Update state and Firestore
+                            const updatedDocuments = documents.filter((d) => d.documentId !== fileId);
+                            setDocuments(updatedDocuments);
+                            await updateJob(createdJobId, { documents: updatedDocuments });
+                          } catch (error: any) {
+                            console.error('Error deleting document:', error);
+                            alert('Failed to delete document: ' + error.message);
+                          }
+                        }}
+                      />
+                    </div>
+
+                    {/* Continue to Job Button */}
+                    <div className="border-t pt-4">
+                      <Button
+                        type="button"
+                        onClick={() => router.push(`/dashboard/jobs/${createdJobId}`)}
+                        className="w-full"
+                      >
+                        Finish & View Job
+                      </Button>
+                    </div>
+                  </>
+                )}
               </TabsContent>
             </Tabs>
 

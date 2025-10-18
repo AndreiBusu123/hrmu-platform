@@ -147,13 +147,16 @@ function JobDetail() {
 
       {/* Job Details Tabs */}
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="client">Client</TabsTrigger>
           <TabsTrigger value="worksite">Worksite</TabsTrigger>
           <TabsTrigger value="quote">Quote</TabsTrigger>
           <TabsTrigger value="dates">Dates</TabsTrigger>
           <TabsTrigger value="checklist">Checklist</TabsTrigger>
+          <TabsTrigger value="files">
+            Files ({job.photos.length + job.documents.length})
+          </TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
@@ -423,6 +426,109 @@ function JobDetail() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Files Tab */}
+        <TabsContent value="files">
+          <div className="space-y-6">
+            {/* Photos Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Photos ({job.photos.length}/20)</CardTitle>
+                <CardDescription>Job site photos and images</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {job.photos.length === 0 ? (
+                  <p className="text-center py-8 text-gray-500">No photos uploaded</p>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {job.photos.map((photo) => (
+                      <div key={photo.documentId} className="group relative">
+                        <a
+                          href={photo.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block"
+                        >
+                          <img
+                            src={photo.url}
+                            alt={photo.name}
+                            className="w-full h-48 object-cover rounded-lg border hover:opacity-90 transition-opacity"
+                          />
+                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all rounded-lg flex items-center justify-center">
+                            <span className="text-white opacity-0 group-hover:opacity-100 text-sm font-medium">
+                              View Full Size
+                            </span>
+                          </div>
+                        </a>
+                        <p className="text-xs text-gray-600 mt-2 truncate">{photo.name}</p>
+                        {photo.uploadedAt && (
+                          <p className="text-xs text-gray-400">
+                            {new Date(photo.uploadedAt.toDate()).toLocaleDateString()}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Documents Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Documents ({job.documents.length}/20)</CardTitle>
+                <CardDescription>Project documents and files</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {job.documents.length === 0 ? (
+                  <p className="text-center py-8 text-gray-500">No documents uploaded</p>
+                ) : (
+                  <div className="space-y-2">
+                    {job.documents.map((doc) => (
+                      <div
+                        key={doc.documentId}
+                        className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50"
+                      >
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div className="text-2xl flex-shrink-0">
+                            {doc.mimeType?.includes('pdf')
+                              ? '📄'
+                              : doc.mimeType?.includes('word')
+                              ? '📝'
+                              : doc.mimeType?.includes('excel')
+                              ? '📊'
+                              : '📎'}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium truncate">{doc.name}</p>
+                            <div className="flex gap-3 text-xs text-gray-500">
+                              {doc.size && <span>{(doc.size / 1024 / 1024).toFixed(2)} MB</span>}
+                              {doc.uploadedAt && (
+                                <span>
+                                  {new Date(doc.uploadedAt.toDate()).toLocaleDateString()}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <a
+                          href={doc.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ml-3"
+                        >
+                          <Button variant="outline" size="sm">
+                            Download
+                          </Button>
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
 

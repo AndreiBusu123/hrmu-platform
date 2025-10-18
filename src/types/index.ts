@@ -139,6 +139,7 @@ export interface JobDocument {
   documentId: string;
   name: string;
   url: string;
+  storagePath: string; // Firebase Storage path for deletion
   type: 'photo' | 'document';
   uploadedBy: string;
   uploadedAt: Timestamp;
